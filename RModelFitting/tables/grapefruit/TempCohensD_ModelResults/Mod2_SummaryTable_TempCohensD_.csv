@@ -1,0 +1,29 @@
+[1] "Model: 2"
+
+Family: gaussian 
+Link function: identity 
+
+Formula:
+temp_cd ~ s(height_cd_scaled) + site_f
+
+Parametric coefficients:
+                 Estimate Std. Error t value Pr(>|t|)    
+(Intercept)       -0.2764     0.1933  -1.430 0.156366    
+site_fHlangwine   -0.1846     0.2450  -0.753 0.453246    
+site_fLetaba      -0.4431     0.2781  -1.593 0.114731    
+site_fMakhohlola  -0.8582     0.2822  -3.041 0.003106 ** 
+site_fNkuhlu       0.1187     0.3588   0.331 0.741579    
+site_fRoanCamp    -0.7887     0.2146  -3.676 0.000407 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Approximate significance of smooth terms:
+                    edf Ref.df     F p-value   
+s(height_cd_scaled)   1      1 11.56 0.00102 **
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+R-sq.(adj) =  0.375   Deviance explained = 41.5%
+-REML =  86.25  Scale est. = 0.33619   n = 95
+[1] "AIC = 174.769655933231"
+[1] "RMSE = 0.5580474070728"

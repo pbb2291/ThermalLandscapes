@@ -1,0 +1,37 @@
+[1] "Model: 13"
+
+Family: gaussian 
+Link function: identity 
+
+Formula:
+temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled, by = site_f) + 
+    s(Time_num_scaled) + site_f
+
+Parametric coefficients:
+                 Estimate Std. Error t value Pr(>|t|)  
+(Intercept)       -0.1695     0.1851  -0.916   0.3626  
+site_fHlangwine   -0.2078     0.2027  -1.025   0.3085  
+site_fLetaba      -0.8695     0.7452  -1.167   0.2468  
+site_fMakhohlola   1.1743     0.8179   1.436   0.1551  
+site_fNkuhlu      -9.8266    29.5332  -0.333   0.7402  
+site_fRoanCamp    -1.6640     0.8416  -1.977   0.0515 .
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Approximate significance of smooth terms:
+                                      edf Ref.df     F p-value   
+s(pai_cd_scaled)                    1.490  1.848 8.440 0.00193 **
+s(AirTemp_scaled):site_fBuffaloCamp 1.000  1.000 0.000 0.99570   
+s(AirTemp_scaled):site_fHlangwine   1.000  1.000 0.303 0.58351   
+s(AirTemp_scaled):site_fLetaba      1.000  1.000 0.231 0.63242   
+s(AirTemp_scaled):site_fMakhohlola  1.000  1.000 7.281 0.00855 **
+s(AirTemp_scaled):site_fNkuhlu      1.451  1.698 0.323 0.77528   
+s(AirTemp_scaled):site_fRoanCamp    2.856  3.417 6.305 0.00290 **
+s(Time_num_scaled)                  1.000  1.000 0.035 0.85171   
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+R-sq.(adj) =  0.636   Deviance explained = 69.7%
+-REML = 57.787  Scale est. = 0.19578   n = 95
+[1] "AIC = 131.78579664697"
+[1] "RMSE = 0.401454102703692"

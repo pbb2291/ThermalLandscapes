@@ -1,0 +1,31 @@
+[1] "Model: 27"
+
+Family: gaussian 
+Link function: identity 
+
+Formula:
+temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) + s(Srad_mJ_scaled) + 
+    s(Specific_RH_gkg_scaled) + site_f
+
+Parametric coefficients:
+                  Estimate Std. Error t value Pr(>|t|)
+(Intercept)        0.05044    2.90513   0.017    0.986
+site_fHlangwine   -1.91874    2.55040  -0.752    0.454
+site_fLetaba       1.94584    9.18253   0.212    0.833
+site_fMakhohlola -21.40998   19.32810  -1.108    0.271
+site_fNkuhlu      -3.41201   13.37798  -0.255    0.799
+site_fRoanCamp     2.55606    2.15079   1.188    0.238
+
+Approximate significance of smooth terms:
+                            edf Ref.df     F  p-value    
+s(pai_cd_scaled)          1.680  2.126 7.951 0.000554 ***
+s(AirTemp_scaled)         2.618  3.171 2.407 0.133992    
+s(Srad_mJ_scaled)         1.000  1.000 2.400 0.125391    
+s(Specific_RH_gkg_scaled) 3.422  4.148 0.961 0.418141    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+R-sq.(adj) =  0.618   Deviance explained = 67.4%
+-REML = 69.277  Scale est. = 0.2055    n = 95
+[1] "AIC = 134.724259821884"
+[1] "RMSE = 0.416715563919597"

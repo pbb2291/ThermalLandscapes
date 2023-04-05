@@ -1,0 +1,30 @@
+[1] "Model: 33"
+
+Family: gaussian 
+Link function: identity 
+
+Formula:
+temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) + s(Dewpoint_C_scaled) + 
+    site_f
+
+Parametric coefficients:
+                 Estimate Std. Error t value Pr(>|t|)
+(Intercept)       0.72916    1.62544   0.449    0.655
+site_fHlangwine  -0.28058    0.32415  -0.866    0.389
+site_fLetaba     -4.74998    6.31638  -0.752    0.454
+site_fMakhohlola -9.38843   12.40236  -0.757    0.451
+site_fNkuhlu     -6.86586    9.89118  -0.694    0.490
+site_fRoanCamp    0.08671    1.00086   0.087    0.931
+
+Approximate significance of smooth terms:
+                       edf Ref.df     F  p-value    
+s(pai_cd_scaled)     1.785  2.269 9.573 9.86e-05 ***
+s(AirTemp_scaled)    4.352  5.259 3.275  0.00947 ** 
+s(Dewpoint_C_scaled) 1.000  1.000 0.470  0.49473    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+R-sq.(adj) =  0.596   Deviance explained = 64.8%
+-REML = 72.053  Scale est. = 0.21714   n = 95
+[1] "AIC = 138.6471244342"
+[1] "RMSE = 0.432564201376887"

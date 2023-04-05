@@ -1,0 +1,29 @@
+[1] "Model: 31"
+
+Family: gaussian 
+Link function: identity 
+
+Formula:
+temp_cd ~ s(Dewpoint_C_scaled) + site_f
+
+Parametric coefficients:
+                  Estimate Std. Error t value Pr(>|t|)   
+(Intercept)        1.17535    6.48037   0.181  0.85652   
+site_fHlangwine    0.02577    0.26175   0.098  0.92182   
+site_fLetaba       9.35368   27.08475   0.345  0.73070   
+site_fMakhohlola -30.49445   36.98217  -0.825  0.41197   
+site_fNkuhlu       7.05403   28.66215   0.246  0.80620   
+site_fRoanCamp    -1.22536    0.40192  -3.049  0.00308 **
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Approximate significance of smooth terms:
+                       edf Ref.df     F p-value  
+s(Dewpoint_C_scaled) 5.862  6.669 1.923  0.0706 .
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+R-sq.(adj) =  0.457   Deviance explained = 51.9%
+-REML = 84.641  Scale est. = 0.29212   n = 95
+[1] "AIC = 165.747379800663"
+[1] "RMSE = 0.505616211296425"

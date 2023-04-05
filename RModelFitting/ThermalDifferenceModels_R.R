@@ -7,150 +7,143 @@ library(lme4)
 library(gratia)
 library(broom)
 library(ggplot2)
+library(qpcR) # for aikike weights
+
+library("wesanderson")
 
 # Set output directories
-tabled = '/n/home02/pbb/scripts/halo-metadata-server/ThermalLandscapes/RModelFitting/tables/TempCohensD_ModelResults'
-figd = '/n/home02/pbb/scripts/halo-metadata-server/ThermalLandscapes/RModelFitting/figs'
+# wd = '/n/home02/pbb/scripts/halo-metadata-server/ThermalLandscapes/RModelFitting/tables/initial/TempCohensD_ModelResults'
+tabled = '/n/home02/pbb/scripts/halo-metadata-server/ThermalLandscapes/RModelFitting/tables/grapefruit/TempCohensD_ModelResults'
+figd = '/n/home02/pbb/scripts/halo-metadata-server/ThermalLandscapes/RModelFitting/figs/grapefruit'
+datad = '/n/home02/pbb/scripts/halo-metadata-server/ThermalLandscapes/RModelFitting/data'
 
-# Load in input datasets
-esstats_temp =
-  read_csv('/n/home02/pbb/scripts/halo-metadata-server/ThermalLandscapes/stats/TTestandEffectSizeStats_Temperature_byExclosure_byImage_AllSites.csv')
+XY = read_csv(paste0(datad, '/XY.csv'))
 
-esstats_pai =
-  read_csv('/n/home02/pbb/scripts/halo-metadata-server/ThermalLandscapes/stats/TTestandEffectSizeStats_PAI_byExclosure_byImage_AllSites.csv')
-
-esstats_height =
-  read_csv('/n/home02/pbb/scripts/halo-metadata-server/ThermalLandscapes/stats/TTestandEffectSizeStats_Height_byExclosure_byImage_AllSites.csv')
-
-ImageTraj = 
-  read_csv('/n/home02/pbb/scripts/halo-metadata-server/ThermalLandscapes/data/in/ImageTrajectories/AllSites_ImageTrajectory_withWeather.csv')
-
-# Make ImageTraj site names the same as those in the esfiles
-# so that you can join them later
-ImageTraj['Site'][ImageTraj['Site'] == 'NkuluEP']  <- "Nkuhlu" 
-ImageTraj['Site'][ImageTraj['Site'] == 'LetabaExclosure']  <- "Letaba" 
-ImageTraj['Site'][ImageTraj['Site'] == 'MakhohlolaEP']  <- "Makhohlola" 
-ImageTraj['Site'][ImageTraj['Site'] == 'BuffaloCamp100m']  <- "BuffaloCamp"
-ImageTraj['Site'][ImageTraj['Site'] == 'HlangwineEP']  <- "Hlangwine" 
-
-# Rename site and image f cols to match
-ImageTraj = ImageTraj %>% rename("site" = "Site",
-                                 "imgf" = "Imagef")
-
-# Last, add .tif to image file names so you can join them
-namejoin = function(s) paste0(s,'.tif')
-ImageTraj['imgf'] = apply(ImageTraj['imgf'], FUN=namejoin, MARGIN=1)
-
-# Make a smaller XY dataframe
-# join on image name
-pai = subset(esstats_pai,
-             select= c(imgf, cohensd, meandiff))
-height = subset(esstats_height,
-             select= c(imgf, cohensd, meandiff))
-
-XY =  subset(esstats_temp,
-             select= c(site, imgf, cohensd, meandiff)) %>%
-  rename("temp_cd" = "cohensd", "temp_md" = "meandiff") %>%
-  inner_join(pai, by='imgf') %>%
-  rename("pai_cd" = "cohensd", "pai_md" = "meandiff") %>%
-  inner_join(height, by='imgf') %>%
-  rename("height_cd" = "cohensd", "height_md" = "meandiff") %>%
-  inner_join(ImageTraj, by= c('site', 'imgf'))
-
+# # # Make Models
 # Make site a factor
 XY = XY %>% mutate(site_f = factor(site))
 
-# Make time as a factor
-# Note... this doesn't really seem to work, but idk
-# timefactor = function(t) strptime(t, '%H:%M:%S')
-timefactor = function(t) as.POSIXct(t, format='%H:%M:%S')
-XY['Time_f'] = lapply(XY['Time'], FUN=timefactor)
-
-datetimefactor = function(dt) as.POSIXct(dt, "%Y-%m-%d %H:%M:%S")
-XY['DateTime_f'] = apply(XY['DateTime'], FUN=datetimefactor, MARGIN=1)
-
-# Also, make a decimal version of time to use in GAM
-# See:
-# https://stackoverflow.com/questions/5186972/how-to-convert-time-mmss-to-decimal-form-in-r
-XY <- XY %>%
-  separate(col = Time, into = c("H", "M", "S"), sep = "\\:", remove = FALSE) %>% 
-  mutate(H = as.numeric(H)/24) %>% 
-  mutate(M = as.numeric(M)/24/60) %>% 
-  mutate(S = as.numeric(S)/24/60/60) %>% 
-  mutate(Time_num = H+M+S)
-
-# Scale the important vars - Temp, Pai, Height, Time, AirTemp, and humidity 
-XY['AirTemp_scaled'] = XY['AirTemp'] %>% scale()
-XY['RH_scaled'] = XY['RH'] %>% scale()
-XY['temp_cd_scaled'] = XY['temp_cd'] %>% scale()
-XY['pai_cd_scaled'] = XY['pai_cd'] %>% scale()
-XY['height_cd_scaled'] = XY['height_cd'] %>% scale()
-XY['Time_num_scaled'] = XY['Time_num'] %>% scale()
-
-
-# # # Plots
-# 
-# ggplot(data = XY) + 
-#   geom_point(aes(x=pai_cd, y=temp_cd, color=site))
-# 
-# ggplot(data = XY) + 
-#   geom_point(aes(x=height_cd, y=temp_cd, color=site))
-# 
-# ggplot(data = XY) + 
-#   geom_point(aes(x=height_cd, y=temp_cd, color=RH))
-# 
-# ggplot(data = XY) + 
-#   geom_point(aes(x=height_cd, y=temp_cd, color=AirTemp))
-# 
-# ggplot(data = XY) + 
-#   geom_point(aes(x=height_cd, y=temp_cd, color=Time_f))
-# 
-# ggplot(data = XY) + 
-#   geom_point(aes(x=height_cd, y=temp_cd, color=DateTime_f))
-# 
-# ggplot(data = XY) + 
-#   geom_point(aes(x=RH_scaled, y=temp_cd, color=site)) + scale_x_time()
-# 
-# ggplot(data = XY) + 
-#   geom_point(aes(x=AirTemp_scaled, y=temp_cd, color=site)) + scale_x_time()
-# 
-# ggplot(data = XY) + 
-#   geom_point(aes(x=Time, y=height_cd, color=site)) + scale_x_time()
-# 
-# ggplot(data = XY) + 
-#   geom_point(aes(x=DateTime_f, y=height_cd, color=site)) + scale_x_time()
-
-
-# # # Make Models
-
 # make a vector of formulas
 # various combinations of Temp, Pai, Height, Time, AirTemp, and humidity
-
+# grapefruit run model set
 formulas = list(as.formula('temp_cd ~ s(pai_cd_scaled) + site_f'),
-             as.formula('temp_cd ~ s(height_cd_scaled) + site_f'),
-             as.formula('temp_cd ~ s(pai_cd_scaled) + s(height_cd_scaled) + site_f'),
-             as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) + site_f'),
-             as.formula('temp_cd ~ s(pai_cd_scaled) + s(RH_scaled) + site_f'),
-             as.formula('temp_cd ~ s(pai_cd_scaled) + s(Time_num_scaled) + site_f'),
-             as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) + s(RH_scaled) + site_f'),
-             as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) + s(RH_scaled) + s(Time_num_scaled) + site_f'),
-             as.formula('temp_cd ~ s(pai_cd_scaled) + s(RH_scaled) + s(Time_num_scaled) + site_f'),
-             as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) + s(Time_num_scaled) + site_f'),
-             as.formula('temp_cd ~ s(pai_cd_scaled) + s(RH_scaled, by=site_f) + s(Time_num_scaled) + site_f'),
-             as.formula('temp_cd ~ s(pai_cd_scaled) + s(RH_scaled) + s(Time_num_scaled, by=site_f) + site_f'),
-             as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled, by=site_f) + s(Time_num_scaled) + site_f'),
-             as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) + s(Time_num_scaled, by=site_f) + site_f'),
-             as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled, RH_scaled) + s(Time_num_scaled) + site_f')
+                as.formula('temp_cd ~ s(height_cd_scaled) + site_f'),
+                as.formula('temp_cd ~ s(AirTemp_scaled) + site_f'),
+                as.formula('temp_cd ~ s(RH_scaled) + site_f'),
+                as.formula('temp_cd ~ s(Time_num_scaled) + site_f'),
+                as.formula('temp_cd ~ s(Srad_mJ_scaled) + site_f'),
+                as.formula('temp_cd ~ s(Specific_RH_gkg_scaled) + site_f'),
+                
+                as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) + site_f'),
+                as.formula('temp_cd ~ s(pai_cd_scaled) + s(RH_scaled) + site_f'),
+                as.formula('temp_cd ~ s(pai_cd_scaled) + s(Time_num_scaled) + site_f'),
+                as.formula('temp_cd ~ s(pai_cd_scaled) + s(Srad_mJ_scaled) + site_f'),
+                as.formula('temp_cd ~ s(pai_cd_scaled) + s(Specific_RH_gkg_scaled) + site_f'),
+                
+                as.formula('temp_cd ~ s(height_cd_scaled) + s(AirTemp_scaled) + site_f'),
+                as.formula('temp_cd ~ s(height_cd_scaled) + s(RH_scaled) + site_f'),
+                as.formula('temp_cd ~ s(height_cd_scaled) + s(Time_num_scaled) + site_f'),
+                as.formula('temp_cd ~ s(height_cd_scaled) + s(Srad_mJ_scaled) + site_f'),
+                as.formula('temp_cd ~ s(height_cd_scaled) + s(Specific_RH_gkg_scaled) + site_f'),
+                
+                as.formula('temp_cd ~ s(pai_cd_scaled) +
+                                      s(RH_scaled) +
+                                      s(Srad_mJ_scaled) + site_f'),
+                as.formula('temp_cd ~ s(height_cd_scaled) +
+                                      s(RH_scaled) +
+                                      s(Srad_mJ_scaled) + site_f'),
+                as.formula('temp_cd ~ s(RH_scaled) +
+                                      s(Srad_mJ_scaled) + site_f'),
+                
+                as.formula('temp_cd ~ s(pai_cd_scaled) +
+                                      s(Time_num_scaled) +
+                                      s(Specific_RH_gkg_scaled) + site_f'),
+                as.formula('temp_cd ~ s(height_cd_scaled) +
+                                      s(Time_num_scaled) +
+                                      s(Specific_RH_gkg_scaled) + site_f'),
+                as.formula('temp_cd ~ s(Time_num_scaled) +
+                                      s(Specific_RH_gkg_scaled) + site_f'),
+                
+                as.formula('temp_cd ~ s(pai_cd_scaled) +
+                                      s(Time_num_scaled) +
+                                      s(Specific_RH_gkg_scaled) + site_f'),
+                as.formula('temp_cd ~ s(height_cd_scaled) +
+                                      s(Time_num_scaled) +
+                                      s(Specific_RH_gkg_scaled) + site_f'),
+                as.formula('temp_cd ~ s(Time_num_scaled) +
+                                      s(Specific_RH_gkg_scaled) + site_f'),
+                
+                as.formula('temp_cd ~ s(pai_cd_scaled) +
+                                      s(AirTemp_scaled) +
+                                      s(Srad_mJ_scaled) +
+                                      s(Specific_RH_gkg_scaled) + site_f'),
+                as.formula('temp_cd ~ s(height_cd_scaled) +
+                                      s(AirTemp_scaled) +
+                                      s(Srad_mJ_scaled) +
+                                      s(Specific_RH_gkg_scaled) + site_f'),
+                as.formula('temp_cd ~ s(AirTemp_scaled) +
+                                      s(Srad_mJ_scaled) +
+                                      s(Specific_RH_gkg_scaled) + site_f')
              )
 
-# Mixed models - add them in later if you need them
+# Other potential models to add
+# as.formula('temp_cd ~ s(pai_cd_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) + s(Specific_RH_gkg_scaled) + site_f'),
+# as.formula('temp_cd ~ s(AirTemp_scaled) + site_f'),
+# as.formula('temp_cd ~ s(AirTemp_scaled) + s(Specific_RH_gkg_scaled) + site_f'),
+# as.formula('temp_cd ~ s(height_cd_scaled) + s(AirTemp_scaled) + site_f'),
+# as.formula('temp_cd ~ s(height_cd_scaled) + s(AirTemp_scaled) + s(Specific_RH_gkg_scaled) + site_f'),
+#
+# -initial model set -
+# as.formula('temp_cd ~ s(pai_cd_scaled) + site_f'),
+# as.formula('temp_cd ~ s(height_cd_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(height_cd_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(RH_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(Time_num_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) + s(RH_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) + s(RH_scaled) + s(Time_num_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(RH_scaled) + s(Time_num_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) + s(Time_num_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(RH_scaled, by=site_f) + s(Time_num_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(RH_scaled) + s(Time_num_scaled, by=site_f) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled, by=site_f) + s(Time_num_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) + s(Time_num_scaled, by=site_f) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled, RH_scaled) + s(Time_num_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(pai_cd_scaled, AirTemp_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(RH_scaled) + s(pai_cd_scaled, RH_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) + s(pai_cd_scaled, AirTemp_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) + s(pai_cd_scaled, AirTemp_scaled) + s(Time_num_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(RH_scaled) + s(pai_cd_scaled, RH_scaled) + s(Time_num_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(Specific_RH_gkg_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(Srad_mJ_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(Specific_RH_gkg_scaled) + s(Srad_mJ_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) + s(Srad_mJ_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) + s(Specific_RH_gkg_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) + s(Specific_RH_gkg_scaled) + s(Srad_mJ_scaled) + site_f'),
+# as.formula('temp_cd ~ s(AirTemp_scaled) + site_f'),
+# as.formula('temp_cd ~ s(RH_scaled) + site_f'),
+# as.formula('temp_cd ~ s(Specific_RH_gkg_scaled) + site_f'),
+# as.formula('temp_cd ~ s(Srad_mJ_scaled) + site_f'),
+# as.formula('temp_cd ~ s(Dewpoint_C_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(Dewpoint_C_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled)  + s(AirTemp_scaled) + s(Dewpoint_C_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) + s(Srad_mJ_scaled) + site_f'),
+# as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled)')
+# 
+# Initial Mixed models - add them in later if you need them
 # as.formula('temp_cd_scaled ~ s(pai_cd_scaled, by=site_f) + s(AirTemp_scaled) + s(RH_scaled) + site_f'),
 # as.formula('temp_cd_scaled ~ s(pai_cd_scaled) + s(AirTemp_scaled, by=site_f) + s(RH_scaled) + site_f'),
 # as.formula('temp_cd_scaled ~ s(pai_cd_scaled) + s(AirTemp_scaled) + s(RH_scaled, by=site_f) + site_f'),
 
-library("wesanderson")
+
+
 # Choose your wes anderson color pallette, v important!
 pal = wes_palette("IsleofDogs1", 6, "continuous")
+
+# Initialize List of aic values for weight calculation
+aic = c()
 
 # Loop over formulas, fit them, and save results
 for (i in seq_along(formulas)){
@@ -158,7 +151,7 @@ for (i in seq_along(formulas)){
   mod = gam(formulas[[i]],
             data=XY,
             family=gaussian,
-            select=TRUE,
+            select=FALSE,
             method="REML")
   
   mod_RMSE = sqrt(mean(mod$residuals**2))
@@ -175,6 +168,9 @@ for (i in seq_along(formulas)){
   print(paste0("AIC = ", mod$aic))
   print(paste0("RMSE = ", mod_RMSE))
   sink()
+  
+  # add aic to list
+  aic = aic %>% append(mod$aic)
 
   # # # Save out a 1-to-1 plot for each model
   
@@ -211,48 +207,68 @@ for (i in seq_along(formulas)){
          filename=paste0(figd,'/1to1Plots/Mod', i, '_1to1Plot_TempCohensD_.png'),
          width = 6, height = 5, units = "in", device='png', dpi=400)
   
-  # # # TBD - save another set of plots with time added
-  # 
-  # p1to1 =  ggplot(data=dfplot) +
-  #   geom_point(mapping = aes(x = temp_cd_fitted,
-  #                            y = temp_cd,
-  #                            shape = Site,
-  #                            color = Time),
-  #              size=3) +
-  #   geom_abline()  +
-  #   theme(axis.text.y = element_text(colour = "black", size = 12),
-  #         axis.text.x = element_text(colour = "black", size = 12),
-  #         legend.text = element_text(size = 12, colour ="black"),
-  #         legend.position = "right",
-  #         title = element_text(face = "bold", size = 12, colour = "black"),
-  #         legend.title = element_text(size = 12, colour = "black", face = "bold"),
-  #         legend.key=element_blank()) +
-  #   xlab('Fitted') +
-  #   ylab('Observed') +
-  #   labs(shape='Site', colour='Time') +
-  #   coord_fixed(ratio = 1)
-  # # +
-  # # coord_fixed(xlim=c(3, 3.8),
-  # #             ylim=c(3, 3.8))
-  # 
-  # # scale_colour_manual(values = c("grey30", "#D55E00")) +
-  # p1to1
-  # 
-  # ggsave(plot = p1to1,
-  #        filename=paste0(figd,'/Mod', i, '_1to1Plot_TempCohensD_withTime.png'),
-  #        width = 9, height = 6, units = "in", device='png', dpi=300)
+
+  partialeffectsplot = draw(mod, residuals = TRUE)
+  ggsave(plot = partialeffectsplot,
+         filename=paste0(figd,'/PartialEffectsPlots/Mod', i, '_PartialEffectsPlot_TempCohensD.png'),
+         width = 6, height = 5, units = "in", device='png', dpi=400)
+  appraisalplot = appraise(mod)
+  ggsave(plot = appraisalplot,
+         filename=paste0(figd,'/AppraisalPlots/Mod', i, '_AppraisalPlot_TempCohensD.png'),
+         width = 6, height = 5, units = "in", device='png', dpi=400)
   
 }
 
+# Calculate aic weights
+aicweights = akaike.weights(aic)
 
-partialeffectsplot = draw(mod, residuals = TRUE)
-ggsave(plot = partialeffectsplot,
-       filename=paste0(figd,'/Mod', i, '_PartialEffectsPlot_TempCohensD.png'),
-       width = 6, height = 5, units = "in", device='png', dpi=400)
-appraisalplot = appraise(mod)
-ggsave(plot = appraisalplot,
-       filename=paste0(figd,'/Mod', i, '_AppraisalPlot_TempCohensD.png'),
-       width = 6, height = 5, units = "in", device='png', dpi=400)
+# add model number to df
+aicweights = data.frame(aicweights) %>% 
+  mutate(modnum=seq_along(formulas))
+
+write_csv(aicweights,
+          paste0(tabled, '/AllModels_AkaikeWeights_TempCohensD.csv'))
+
+# # # Fit and plot an important model
+# mod = gam(formulas[[26]],
+#           data=XY,
+#           family=gaussian,
+#           select=FALSE,
+#           method="REML")
+# 
+# summary(mod)
+# draw(mod, residuals=TRUE)
+# 
+# mod2 = gam(formula=as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) +
+#                     s(Srad_mJ_scaled) + site_f'),
+#            data=XY,
+#            family=gaussian,
+#            select=FALSE,
+#            method="REML")
+# 
+# summary(mod2)
+# draw(mod2, residuals=TRUE)
+# 
+# mod3 = gam(formula=as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) +
+#                                site_f'),
+#            data=XY,
+#            family=gaussian,
+#            select=FALSE,
+#            method="REML")
+# 
+# summary(mod3)
+# draw(mod3, residuals=TRUE)
+# 
+# 
+# mod4 = gam(formula=as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled)'),
+#            data=XY,
+#            family=gaussian,
+#            select=FALSE,
+#            method="REML")
+# 
+# summary(mod4)
+# draw(mod4, residuals=TRUE)
+
 # gam.check(mod, rep=500)
 # lines(c(-2, 0.5), c(-2, 0.5))
 
@@ -315,6 +331,61 @@ ggsave(plot = p1,
        width = 6, height = 5, units = "in", device='png', dpi=400)
 
 
+p1 =  ggplot(data=XY) + 
+  geom_point(aes(x=Specific_RH_gkg, y=temp_cd, color=site_f))+ 
+  theme(axis.text.y = element_text(colour = "black", size = 12),
+        axis.text.x = element_text(colour = "black", size = 12),
+        legend.text = element_text(size = 12, colour ="black"),
+        legend.position = "right",
+        title = element_text(face = "bold", size = 12, colour = "black"),
+        legend.title = element_text(size = 12, colour = "black", face = "bold"),
+        legend.key=element_blank()) +
+  theme_bw() +
+  xlab('Specific Humidity [g/kg]') +
+  ylab('Temperature Cohen\'s D') +
+  scale_color_manual(values = pal)
+p1
+ggsave(plot = p1,
+       filename=paste0(figd,'/Scatter_SpecificHumiditygkg_TempCohensD.png'),
+       width = 6, height = 5, units = "in", device='png', dpi=400)
+
+
+p1 =  ggplot(data=XY) + 
+  geom_point(aes(x=Srad_mJ, y=temp_cd, color=site_f))+ 
+  theme(axis.text.y = element_text(colour = "black", size = 12),
+        axis.text.x = element_text(colour = "black", size = 12),
+        legend.text = element_text(size = 12, colour ="black"),
+        legend.position = "right",
+        title = element_text(face = "bold", size = 12, colour = "black"),
+        legend.title = element_text(size = 12, colour = "black", face = "bold"),
+        legend.key=element_blank()) +
+  theme_bw() +
+  xlab('Srad_mJ') +
+  ylab('Temperature Cohen\'s D') +
+  scale_color_manual(values = pal)
+p1
+ggsave(plot = p1,
+       filename=paste0(figd,'/Scatter_SradmJ_TempCohensD.png'),
+       width = 6, height = 5, units = "in", device='png', dpi=400)
+
+
+p1 =  ggplot(data=XY) + 
+  geom_point(aes(x=Dewpoint_C, y=temp_cd, color=site_f))+ 
+  theme(axis.text.y = element_text(colour = "black", size = 12),
+        axis.text.x = element_text(colour = "black", size = 12),
+        legend.text = element_text(size = 12, colour ="black"),
+        legend.position = "right",
+        title = element_text(face = "bold", size = 12, colour = "black"),
+        legend.title = element_text(size = 12, colour = "black", face = "bold"),
+        legend.key=element_blank()) +
+  theme_bw() +
+  xlab('Dewpoint_C') +
+  ylab('Temperature Cohen\'s D') +
+  scale_color_manual(values = pal)
+p1
+ggsave(plot = p1,
+       filename=paste0(figd,'/Scatter_DewpointC_TempCohensD.png'),
+       width = 6, height = 5, units = "in", device='png', dpi=400)
 
 p1 =  ggplot(data=XY) + 
   geom_point(aes(x=Time, y=temp_cd, color=site_f))+ 

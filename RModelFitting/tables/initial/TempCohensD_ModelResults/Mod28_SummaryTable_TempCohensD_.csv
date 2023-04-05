@@ -1,0 +1,29 @@
+[1] "Model: 28"
+
+Family: gaussian 
+Link function: identity 
+
+Formula:
+temp_cd ~ s(RH_scaled) + site_f
+
+Parametric coefficients:
+                 Estimate Std. Error t value Pr(>|t|)    
+(Intercept)      -0.97130    0.24310  -3.995 0.000139 ***
+site_fHlangwine  -0.02203    0.26423  -0.083 0.933745    
+site_fLetaba      1.75262    0.49640   3.531 0.000678 ***
+site_fMakhohlola -0.01791    1.41418  -0.013 0.989928    
+site_fNkuhlu      0.55988    0.39735   1.409 0.162543    
+site_fRoanCamp   -0.04736    0.26364  -0.180 0.857874    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Approximate significance of smooth terms:
+               edf Ref.df     F  p-value    
+s(RH_scaled) 5.678  6.732 7.085 3.24e-06 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+R-sq.(adj) =  0.543   Deviance explained = 59.5%
+-REML = 80.599  Scale est. = 0.24593   n = 95
+[1] "AIC = 149.238093616157"
+[1] "RMSE = 0.464436897296537"

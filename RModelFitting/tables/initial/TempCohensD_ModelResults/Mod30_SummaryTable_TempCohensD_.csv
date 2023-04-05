@@ -1,0 +1,27 @@
+[1] "Model: 30"
+
+Family: gaussian 
+Link function: identity 
+
+Formula:
+temp_cd ~ s(Srad_mJ_scaled) + site_f
+
+Parametric coefficients:
+                 Estimate Std. Error t value Pr(>|t|)    
+(Intercept)       -0.2382     0.2105  -1.131 0.260930    
+site_fHlangwine    0.1101     0.3017   0.365 0.716085    
+site_fLetaba      -0.3321     0.3197  -1.039 0.301699    
+site_fMakhohlola  -0.8666     0.3278  -2.644 0.009706 ** 
+site_fNkuhlu      -0.2363     0.3935  -0.601 0.549701    
+site_fRoanCamp    -0.9683     0.2447  -3.958 0.000153 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Approximate significance of smooth terms:
+                  edf Ref.df     F p-value
+s(Srad_mJ_scaled)   1      1 0.228   0.634
+
+R-sq.(adj) =  0.294   Deviance explained = 33.9%
+-REML =  91.11  Scale est. = 0.37937   n = 95
+[1] "AIC = 186.249978515179"
+[1] "RMSE = 0.5928068313841"

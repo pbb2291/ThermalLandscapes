@@ -1,0 +1,30 @@
+[1] "Model: 18"
+
+Family: gaussian 
+Link function: identity 
+
+Formula:
+temp_cd ~ s(pai_cd_scaled) + s(RH_scaled) + s(Srad_mJ_scaled) + 
+    site_f
+
+Parametric coefficients:
+                  Estimate Std. Error t value Pr(>|t|)
+(Intercept)      -1.038349   2.682527  -0.387    0.700
+site_fHlangwine  -0.156816   2.279399  -0.069    0.945
+site_fLetaba      0.366481   5.134133   0.071    0.943
+site_fMakhohlola  7.821556   7.680375   1.018    0.311
+site_fNkuhlu     -0.003828   4.987052  -0.001    0.999
+site_fRoanCamp   -0.881184   3.530408  -0.250    0.804
+
+Approximate significance of smooth terms:
+                    edf Ref.df      F  p-value    
+s(pai_cd_scaled)  1.197  1.370 12.580 0.000471 ***
+s(RH_scaled)      4.129  5.159  3.274 0.008086 ** 
+s(Srad_mJ_scaled) 1.656  1.811  1.188 0.362649    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+R-sq.(adj) =  0.613   Deviance explained = 66.2%
+-REML = 72.066  Scale est. = 0.20799   n = 95
+[1] "AIC = 134.429996165547"
+[1] "RMSE = 0.423758269636615"

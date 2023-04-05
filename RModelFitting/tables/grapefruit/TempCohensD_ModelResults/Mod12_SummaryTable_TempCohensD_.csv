@@ -1,0 +1,30 @@
+[1] "Model: 12"
+
+Family: gaussian 
+Link function: identity 
+
+Formula:
+temp_cd ~ s(pai_cd_scaled) + s(Specific_RH_gkg_scaled) + site_f
+
+Parametric coefficients:
+                 Estimate Std. Error t value Pr(>|t|)    
+(Intercept)        2.1435     1.6192   1.324 0.189156    
+site_fHlangwine   -0.3089     0.3554  -0.869 0.387196    
+site_fLetaba      -3.7804     3.7045  -1.020 0.310425    
+site_fMakhohlola -17.1036    12.3327  -1.387 0.169149    
+site_fNkuhlu      -7.1945     6.9221  -1.039 0.301618    
+site_fRoanCamp    -1.6056     0.4095  -3.921 0.000179 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Approximate significance of smooth terms:
+                            edf Ref.df      F  p-value    
+s(pai_cd_scaled)          2.160  2.769 13.987 7.47e-07 ***
+s(Specific_RH_gkg_scaled) 2.665  3.351  0.727    0.576    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+R-sq.(adj) =  0.546   Deviance explained = 59.4%
+-REML = 73.129  Scale est. = 0.24394   n = 95
+[1] "AIC = 147.724703811986"
+[1] "RMSE = 0.464907253695506"

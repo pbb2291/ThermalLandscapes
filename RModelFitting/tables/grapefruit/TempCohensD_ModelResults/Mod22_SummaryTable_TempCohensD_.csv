@@ -1,0 +1,30 @@
+[1] "Model: 22"
+
+Family: gaussian 
+Link function: identity 
+
+Formula:
+temp_cd ~ s(height_cd_scaled) + s(Time_num_scaled) + s(Specific_RH_gkg_scaled) + 
+    site_f
+
+Parametric coefficients:
+                 Estimate Std. Error t value Pr(>|t|)
+(Intercept)        2.5010     1.9173   1.304    0.196
+site_fHlangwine   -0.1905     0.6388  -0.298    0.766
+site_fLetaba      -5.2961     4.4321  -1.195    0.236
+site_fMakhohlola -22.9402    14.9960  -1.530    0.130
+site_fNkuhlu      -9.1863     8.2284  -1.116    0.268
+site_fRoanCamp    -0.9204     0.6356  -1.448    0.151
+
+Approximate significance of smooth terms:
+                            edf Ref.df     F  p-value    
+s(height_cd_scaled)       1.669  2.096 7.009 0.001364 ** 
+s(Time_num_scaled)        4.402  5.385 4.338 0.000962 ***
+s(Specific_RH_gkg_scaled) 2.260  2.797 0.812 0.494974    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+R-sq.(adj) =  0.566   Deviance explained = 62.7%
+-REML = 75.176  Scale est. = 0.23343   n = 95
+[1] "AIC = 146.513659108464"
+[1] "RMSE = 0.445218506264556"
