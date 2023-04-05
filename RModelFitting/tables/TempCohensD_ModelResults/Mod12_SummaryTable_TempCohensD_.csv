@@ -19,15 +19,24 @@ site_fRoanCamp    -1.1879     0.1896  -6.264  1.5e-08 ***
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 Approximate significance of smooth terms:
-                                           edf Ref.df     F  p-value    
-s(pai_cd_scaled)                     1.055e+00      9 1.773 7.41e-05 ***
-s(RH_scaled)                         6.889e-02      9 0.008   0.3026    
-s(Time_num_scaled):site_fBuffaloCamp 6.508e-06      5 0.000   0.9287    
-s(Time_num_scaled):site_fHlangwine   2.669e-05      9 0.000   0.7573    
-s(Time_num_scaled):site_fLetaba      1.001e-05      6 0.000   0.5678    
-s(Time_num_scaled):site_fMakhohlola  8.749e-01      4 1.744   0.0059 ** 
-s(Time_num_scaled):site_fNkuhlu      1.158e-05      3 0.000   0.4922    
-s(Time_num_scaled):site_fRoanCamp    2.456e+00      8 3.641 2.56e-06 ***
+                                           edf Ref.df     F
+s(pai_cd_scaled)                     1.055e+00      9 1.773
+s(RH_scaled)                         6.889e-02      9 0.008
+s(Time_num_scaled):site_fBuffaloCamp 6.508e-06      5 0.000
+s(Time_num_scaled):site_fHlangwine   2.669e-05      9 0.000
+s(Time_num_scaled):site_fLetaba      1.001e-05      6 0.000
+s(Time_num_scaled):site_fMakhohlola  8.749e-01      4 1.744
+s(Time_num_scaled):site_fNkuhlu      1.158e-05      3 0.000
+s(Time_num_scaled):site_fRoanCamp    2.456e+00      8 3.641
+                                      p-value    
+s(pai_cd_scaled)                     7.41e-05 ***
+s(RH_scaled)                           0.3026    
+s(Time_num_scaled):site_fBuffaloCamp   0.9287    
+s(Time_num_scaled):site_fHlangwine     0.7573    
+s(Time_num_scaled):site_fLetaba        0.5678    
+s(Time_num_scaled):site_fMakhohlola    0.0059 ** 
+s(Time_num_scaled):site_fNkuhlu        0.4922    
+s(Time_num_scaled):site_fRoanCamp    2.56e-06 ***
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
