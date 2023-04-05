@@ -3,3 +3,8 @@
 __pycache__/
 .ipynb_checkpoints/
 figs/
+figs/*
+data/out/06232022/
+data/out/pixelpickles/
+data/out/raster/
+
