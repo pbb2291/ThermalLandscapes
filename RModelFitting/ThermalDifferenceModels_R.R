@@ -10,7 +10,7 @@ library(ggplot2)
 
 # Set output directories
 tabled = '/n/home02/pbb/scripts/halo-metadata-server/ThermalLandscapes/RModelFitting/tables/TempCohensD_ModelResults'
-figd = '/n/home02/pbb/scripts/halo-metadata-server/ThermalLandscapes/RModelFitting/figs/1to1Plots'
+figd = '/n/home02/pbb/scripts/halo-metadata-server/ThermalLandscapes/RModelFitting/figs'
 
 # Load in input datasets
 esstats_temp =
@@ -135,7 +135,12 @@ formulas = list(as.formula('temp_cd ~ s(pai_cd_scaled) + site_f'),
              as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) + s(RH_scaled) + site_f'),
              as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) + s(RH_scaled) + s(Time_num_scaled) + site_f'),
              as.formula('temp_cd ~ s(pai_cd_scaled) + s(RH_scaled) + s(Time_num_scaled) + site_f'),
-             as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) + s(Time_num_scaled) + site_f')
+             as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) + s(Time_num_scaled) + site_f'),
+             as.formula('temp_cd ~ s(pai_cd_scaled) + s(RH_scaled, by=site_f) + s(Time_num_scaled) + site_f'),
+             as.formula('temp_cd ~ s(pai_cd_scaled) + s(RH_scaled) + s(Time_num_scaled, by=site_f) + site_f'),
+             as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled, by=site_f) + s(Time_num_scaled) + site_f'),
+             as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled) + s(Time_num_scaled, by=site_f) + site_f'),
+             as.formula('temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled, RH_scaled) + s(Time_num_scaled) + site_f')
              )
 
 # Mixed models - add them in later if you need them
@@ -165,6 +170,7 @@ for (i in seq_along(formulas)){
 
   # use sink to save summary outputs in a txt file
   sink(paste0(tabled, '/Mod', i, '_SummaryTable_TempCohensD_.csv'))
+  print(paste0("Model: ", i))
   print(summary(mod))
   print(paste0("AIC = ", mod$aic))
   print(paste0("RMSE = ", mod_RMSE))
@@ -202,7 +208,7 @@ for (i in seq_along(formulas)){
   p1to1
   
   ggsave(plot = p1to1,
-         filename=paste0(figd,'/Mod', i, '_1to1Plot_TempCohensD_.png'),
+         filename=paste0(figd,'/1to1Plots/Mod', i, '_1to1Plot_TempCohensD_.png'),
          width = 6, height = 5, units = "in", device='png', dpi=400)
   
   # # # TBD - save another set of plots with time added
@@ -239,4 +245,92 @@ for (i in seq_along(formulas)){
 }
 
 
-summary(mod)$dev.expl
+partialeffectsplot = draw(mod, residuals = TRUE)
+ggsave(plot = partialeffectsplot,
+       filename=paste0(figd,'/Mod', i, '_PartialEffectsPlot_TempCohensD.png'),
+       width = 6, height = 5, units = "in", device='png', dpi=400)
+appraisalplot = appraise(mod)
+ggsave(plot = appraisalplot,
+       filename=paste0(figd,'/Mod', i, '_AppraisalPlot_TempCohensD.png'),
+       width = 6, height = 5, units = "in", device='png', dpi=400)
+# gam.check(mod, rep=500)
+# lines(c(-2, 0.5), c(-2, 0.5))
+
+# Make some nice plots of the important variables
+p1 =  ggplot(data=XY) + 
+    geom_point(aes(x=pai_cd, y=temp_cd, color=site_f))+ 
+    theme(axis.text.y = element_text(colour = "black", size = 12),
+          axis.text.x = element_text(colour = "black", size = 12),
+          legend.text = element_text(size = 12, colour ="black"),
+          legend.position = "right",
+          title = element_text(face = "bold", size = 12, colour = "black"),
+          legend.title = element_text(size = 12, colour = "black", face = "bold"),
+          legend.key=element_blank()) +
+    theme_bw() +
+    xlab('PAI Cohen\'s D') +
+    ylab('Temperature Cohen\'s D') +
+    coord_fixed(ratio = 1) +
+    scale_color_manual(values = pal)
+p1
+ggsave(plot = p1,
+       filename=paste0(figd,'/Scatter_PAICohensD_TempCohensD.png'),
+       width = 6, height = 5, units = "in", device='png', dpi=400)
+
+p1 =  ggplot(data=XY) + 
+  geom_point(aes(x=AirTemp, y=temp_cd, color=site_f))+ 
+  theme(axis.text.y = element_text(colour = "black", size = 12),
+        axis.text.x = element_text(colour = "black", size = 12),
+        legend.text = element_text(size = 12, colour ="black"),
+        legend.position = "right",
+        title = element_text(face = "bold", size = 12, colour = "black"),
+        legend.title = element_text(size = 12, colour = "black", face = "bold"),
+        legend.key=element_blank()) +
+  theme_bw() +
+  xlab('Air Temperature [C]') +
+  ylab('Temperature Cohen\'s D')+
+  scale_color_manual(values = pal)
+p1
+ggsave(plot = p1,
+       filename=paste0(figd,'/Scatter_AirTemp_TempCohensD.png'),
+       width = 6, height = 5, units = "in", device='png', dpi=400)
+
+
+
+p1 =  ggplot(data=XY) + 
+  geom_point(aes(x=RH, y=temp_cd, color=site_f))+ 
+  theme(axis.text.y = element_text(colour = "black", size = 12),
+        axis.text.x = element_text(colour = "black", size = 12),
+        legend.text = element_text(size = 12, colour ="black"),
+        legend.position = "right",
+        title = element_text(face = "bold", size = 12, colour = "black"),
+        legend.title = element_text(size = 12, colour = "black", face = "bold"),
+        legend.key=element_blank()) +
+  theme_bw() +
+  xlab('Relative Humidity [%]') +
+  ylab('Temperature Cohen\'s D') +
+  scale_color_manual(values = pal)
+p1
+ggsave(plot = p1,
+       filename=paste0(figd,'/Scatter_RelHumidity_TempCohensD.png'),
+       width = 6, height = 5, units = "in", device='png', dpi=400)
+
+
+
+p1 =  ggplot(data=XY) + 
+  geom_point(aes(x=Time, y=temp_cd, color=site_f))+ 
+  theme(axis.text.y = element_text(colour = "black", size = 12),
+        axis.text.x = element_text(colour = "black", size = 12),
+        legend.text = element_text(size = 12, colour ="black"),
+        legend.position = "right",
+        title = element_text(face = "bold", size = 12, colour = "black"),
+        legend.title = element_text(size = 12, colour = "black", face = "bold"),
+        legend.key=element_blank()) +
+  theme_bw() +
+  xlab('Local Time') +
+  ylab('Temperature Cohen\'s D') +
+  scale_color_manual(values = pal)
+p1
+ggsave(plot = p1,
+       filename=paste0(figd,'/Scatter_Time_TempCohensD.png'),
+       width = 6, height = 5, units = "in", device='png', dpi=400)
+

@@ -1,0 +1,32 @@
+[1] "Model: 15"
+
+Family: gaussian 
+Link function: identity 
+
+Formula:
+temp_cd ~ s(pai_cd_scaled) + s(AirTemp_scaled, RH_scaled) + s(Time_num_scaled) + 
+    site_f
+
+Parametric coefficients:
+                 Estimate Std. Error t value Pr(>|t|)    
+(Intercept)      -0.21055    0.19377  -1.087   0.2803    
+site_fHlangwine  -0.08353    0.25716  -0.325   0.7461    
+site_fLetaba     -0.71861    0.33477  -2.147   0.0347 *  
+site_fMakhohlola -0.70259    0.40692  -1.727   0.0879 .  
+site_fNkuhlu      0.29030    0.48774   0.595   0.5533    
+site_fRoanCamp   -0.94879    0.21762  -4.360 3.68e-05 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Approximate significance of smooth terms:
+                               edf Ref.df     F  p-value    
+s(pai_cd_scaled)            1.6629      9 3.064 7.93e-07 ***
+s(AirTemp_scaled,RH_scaled) 2.6546     29 0.274  0.00767 ** 
+s(Time_num_scaled)          0.9601      9 0.189  0.01606 *  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+R-sq.(adj) =  0.585   Deviance explained =   63%
+-REML = 72.509  Scale est. = 0.22318   n = 95
+[1] "AIC = 139.667685546825"
+[1] "RMSE = 0.443488664589151"
