@@ -1,0 +1,46 @@
+[1] "Model: 12"
+
+Family: gaussian 
+Link function: identity 
+
+Formula:
+temp_cd ~ s(pai_cd_scaled) + s(RH_scaled) + s(Time_num_scaled, 
+    by = site_f) + site_f
+
+Parametric coefficients:
+                 Estimate Std. Error t value Pr(>|t|)    
+(Intercept)       -0.1581     0.1479  -1.069   0.2881    
+site_fHlangwine   -0.2183     0.1887  -1.157   0.2506    
+site_fLetaba      -0.5352     0.2172  -2.465   0.0157 *  
+site_fMakhohlola  -8.7602     9.7028  -0.903   0.3692    
+site_fNkuhlu       0.1562     0.2812   0.555   0.5802    
+site_fRoanCamp    -1.1879     0.1896  -6.264  1.5e-08 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Approximate significance of smooth terms:
+                                           edf Ref.df     F
+s(pai_cd_scaled)                     1.055e+00      9 1.773
+s(RH_scaled)                         6.889e-02      9 0.008
+s(Time_num_scaled):site_fBuffaloCamp 6.508e-06      5 0.000
+s(Time_num_scaled):site_fHlangwine   2.669e-05      9 0.000
+s(Time_num_scaled):site_fLetaba      1.001e-05      6 0.000
+s(Time_num_scaled):site_fMakhohlola  8.749e-01      4 1.744
+s(Time_num_scaled):site_fNkuhlu      1.158e-05      3 0.000
+s(Time_num_scaled):site_fRoanCamp    2.456e+00      8 3.641
+                                      p-value    
+s(pai_cd_scaled)                     7.41e-05 ***
+s(RH_scaled)                           0.3026    
+s(Time_num_scaled):site_fBuffaloCamp   0.9287    
+s(Time_num_scaled):site_fHlangwine     0.7573    
+s(Time_num_scaled):site_fLetaba        0.5678    
+s(Time_num_scaled):site_fMakhohlola    0.0059 ** 
+s(Time_num_scaled):site_fNkuhlu        0.4922    
+s(Time_num_scaled):site_fRoanCamp    2.56e-06 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+R-sq.(adj) =  0.646   Deviance explained = 68.2%
+-REML =  66.82  Scale est. = 0.19016   n = 95
+[1] "AIC = 123.743040953141"
+[1] "RMSE = 0.411380697757169"

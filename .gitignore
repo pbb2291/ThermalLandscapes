@@ -9,5 +9,6 @@ data/out/pixelpickles/
 data/out/raster/
 data/in/Hlangwine
 data/in/Hlangwine/*
-
+data/out/pixelpickles_sensitivity/
+data/out/pixelpickles_weather/
 
