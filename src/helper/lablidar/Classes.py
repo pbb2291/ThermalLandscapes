@@ -17,8 +17,9 @@ import fiona
 import georinex
 import math
 
-import Classes
-import Functions
+import sys
+sys.path.append('./')
+import helper.lablidar.Functions as Functions
 import struct
 from datetime import datetime, timedelta
 import geojson

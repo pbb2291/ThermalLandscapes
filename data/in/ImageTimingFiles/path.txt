@@ -1,0 +1,6 @@
+/n/holystore01/LABS/davies_lab/Lab/data/processed/Africa/Kruger/2020/2020_01-02/20200116_NkuluEP
+/n/holystore01/LABS/davies_lab/Lab/data/processed/Africa/Kruger/2020/2020_12/RoanCamp
+/n/holystore01/LABS/davies_lab/Lab/data/processed/Africa/Kruger/2020/2020_12/LetabaExclosure
+/n/holystore01/LABS/davies_lab/Lab/data/processed/Africa/Kruger/2020/2020_01-02/20200124-081112_MakhohlolaEP
+/n/holystore01/LABS/davies_lab/Lab/data/processed/Africa/Kruger/2020/2020_01-02/20200121_BuffaloCamp/AltitudeStudy/20200121-064054_BuffaloCamp100m
+/n/holystore01/LABS/davies_lab/Lab/data/processed/Africa/Kruger/2020/2020_01-02/20200122_HlangwineEP
