@@ -1,14 +1,5 @@
 # Jupyter Notebook
 .ipynb_checkpoints
 __pycache__/
-figs/
-figs/*
-data/out/06232022/
-data/out/pixelpickles/
-data/out/raster/
-data/in/Hlangwine
-data/in/Hlangwine/*
-data/out/pixelpickles_sensitivity/
-data/out/pixelpickles_weather/
 .idea
 .venv
