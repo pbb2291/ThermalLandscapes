@@ -113,18 +113,28 @@ def merge_imgtraj_pixel_dfs(imgtraj_df, pixel_df):
     
     return pixel_df
 
+def calc_distance(pix_north_east_elev: tuple,
+                  uav_north_east_alt:tuple):
+    north_distance = pix_north_east_elev[0] - uav_north_east_alt[0]
+    east_distance = pix_north_east_elev[1] - uav_north_east_alt[1]
+    z_distance = pix_north_east_elev[2] - uav_north_east_alt[2]
+    distance = np.sqrt(((north_distance**2) + (east_distance**2) + (z_distance**2)))
+    return distance
 
 def correct_temps(imgtraj_df, pixel_df):
-
-    # load relevant file paths from .env file
-    load_dotenv()
-
-    # set all your file paths
-    DATADIR = os.getenv("DATADIR")
-    FIGDIR = os.getenv("FIGDIR")
-    STATSDIR = os.getenv("STATSDIR")
-    OUTDIR = os.getenv("OUTDIR")
-    TRAJDIR = os.getenv("TRAJDIR")
+    
+    # Pair down and clean image traj df
+    # so that you can merge it with pixel_df
+    imgtraj_df = imgtraj_df[['Imagef', 'Northing', 'Easting', 'Altitude', 'AirTemp', 'RH', 'STRD', 'DateTime']]
+    
+    # make an image file column for joining dfs 
+    imgtraj_df['imgf'] = imgtraj_df.Imagef.apply(lambda i: i + '.tif')
+    
+    # drop column without a use
+    imgtraj_df = imgtraj_df.drop('Imagef', axis=1)
+    
+    # now, make a new pixel_df that's got weather data in it
+    pixel_df = pixel_df.merge(imgtraj_df)
 
     # merge the two inputs processing
     df = merge_imgtraj_pixel_dfs(imgtraj_df=imgtraj_df, pixel_df=pixel_df)
@@ -138,7 +148,12 @@ def correct_temps(imgtraj_df, pixel_df):
 
     # Add 'distance' column by subtracting elevation and altitude
     # Note: Had to add an else here to fix distance calculation... cause it comes up negative for RoanCamp
-    pixel_df['Distance'] = [a - e if ((a-e)>0) else 100.0 for a, e in zip(pixel_df['Altitude'], pixel_df['Elevation'])]
+    # pixel_df['Distance'] = [a - e if ((a-e)>0) else 100.0 for a, e in zip(pixel_df['Altitude'], pixel_df['Elevation'])]
+    pixel_df['Distance'] = df.apply(lambda x: calc_distance(pix_north_east_elev=(x['Northing_pix'], x['Easting_pix'], x['Elevation']),
+                                                            uav_north_east_alt=(x['Northing'], x['Easting'], x['Altitude'])),
+                                    axis=1)
+    # if this errors out, just assign it as 100 meters
+    pixel_df['Distance'][pixel_df['Distance'] < 0] = 100
 
     # Create a signal (phi) column
     df['phi'] = df.Temperature.apply(lambda t: phicalc(temp_kelvin = t + 273.15))
@@ -169,10 +184,22 @@ def correct_temps(imgtraj_df, pixel_df):
 if __name__ == "__main__":
 
     import matplotlib.pyplot as plt
+    import dotenv
+    import seaborn as sns
 
     # Buffalo camp for testing
     s = ['BuffaloCamp']
     s_it = ['BuffaloCamp100m']
+        
+    # load relevant file paths from .env file
+    load_dotenv()
+
+    # set all your file paths
+    DATADIR = os.getenv("DATADIR")
+    FIGDIR = os.getenv("FIGDIR")
+    STATSDIR = os.getenv("STATSDIR")
+    OUTDIR = os.getenv("OUTDIR")
+    TRAJDIR = os.getenv("TRAJDIR")
     
     # # # Make a new pixel dataframe with weather data, everything you'd need for corrections
     # read in image trajectories
@@ -186,6 +213,9 @@ if __name__ == "__main__":
     
     # # # Plot and save figure
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=True)
+        
+    # Set hue order for plotting
+    exclosure_hues = ["Outside", "Inside"]
     
     sns.kdeplot(data=pixel_df, x='Temperature', ax=ax1, hue='Exclosure',
                 palette='plasma_r',
@@ -216,4 +246,4 @@ if __name__ == "__main__":
 
     plt.show()
 
-    # fig.savefig(f'{FIGDIR}/KDEPlot_SensitivityTests_{s}.png', dpi=300)
+    fig.savefig(f'{FIGDIR}/KDEPlot_SensitivityTests_{s}.png', dpi=300)
