@@ -97,20 +97,21 @@ def assign_emissivity(vegtype):
 
 
 def merge_imgtraj_pixel_dfs(imgtraj_df, pixel_df):
-
+   
+    
     # Pair down and clean image traj df
     # so that you can merge it with pixel_df
-    imgtraj_df = imgtraj_df[['Imagef', 'Altitude', 'AirTemp', 'RH', 'STRD', 'DateTime']]
-    
+    imgtraj_df = imgtraj_df[['imgf', 'Altitude', 'AirTemp', 'RH', 'STRD', 'DateTime']]
+    pixel_df = pixel_df.rename(columns={'Northing': 'Northing_pix', 'Easting': 'Easting_pix'})
     # make an image file column for joining dfs 
-    imgtraj_df['imgf'] = imgtraj_df.Imagef.apply(lambda i: i + '.tif')
+    #imgtraj_df['imgf'] = imgtraj_df.Imagef.apply(lambda i: i + '.tif')
     
     # drop column without a use
-    imgtraj_df = imgtraj_df.drop('Imagef', axis=1)
+    #imgtraj_df = imgtraj_df.drop('Imagef', axis=1)
     
     # now, make a new pixel_df that's got weather data in it
     pixel_df = pixel_df.merge(imgtraj_df)
-    
+    print(pixel_df.head())
     return pixel_df
 
 def calc_distance(pix_north_east_elev: tuple,
