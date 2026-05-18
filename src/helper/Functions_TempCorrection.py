@@ -185,8 +185,9 @@ def correct_temps(imgtraj_df, pixel_df):
 if __name__ == "__main__":
 
     import matplotlib.pyplot as plt
-    import dotenv
+    from dotenv import load_dotenv
     import seaborn as sns
+    import os
 
     # Buffalo camp for testing
     s = ['BuffaloCamp']
@@ -209,7 +210,7 @@ if __name__ == "__main__":
     # read in image pickle file 
     pixel_df = pd.read_pickle(f'{DATADIR}/out/pixelpickles/{s}_pixels.obj')
 
-    # # # Run correction
+    # # # Run correction 
     pixel_df_correct = correct_temps(imgtraj_df=imgtraj_df, pixel_df=pixel_df)
     
     # # # Plot and save figure
