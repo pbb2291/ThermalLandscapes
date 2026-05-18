@@ -123,63 +123,41 @@ def calc_distance(pix_north_east_elev: tuple,
     return distance
 
 def correct_temps(imgtraj_df, pixel_df):
-    
-    # Pair down and clean image traj df
-    # so that you can merge it with pixel_df
+
+    # Rename drone Northing/Easting before merging to avoid collision with pixel coords
     imgtraj_df = imgtraj_df[['Imagef', 'Northing', 'Easting', 'Altitude', 'AirTemp', 'RH', 'STRD', 'DateTime']]
-    
-    # make an image file column for joining dfs 
+    imgtraj_df = imgtraj_df.rename(columns={'Northing': 'Northing_uav', 'Easting': 'Easting_uav'})
     imgtraj_df['imgf'] = imgtraj_df.Imagef.apply(lambda i: i + '.tif')
-    
-    # drop column without a use
     imgtraj_df = imgtraj_df.drop('Imagef', axis=1)
-    
-    # now, make a new pixel_df that's got weather data in it
-    pixel_df = pixel_df.merge(imgtraj_df)
 
-    # merge the two inputs processing
-    df = merge_imgtraj_pixel_dfs(imgtraj_df=imgtraj_df, pixel_df=pixel_df)
+    df = pixel_df.merge(imgtraj_df, on='imgf')
 
-    # This is the air temp that FLIR used to calculate temperature in the images
-    # likewise, the other parameters below are the FLIR camera parameters
-    # (or our best guess at them) for converting signal -> temp
+    # Simple distance: vertical separation between drone altitude and ground elevation.
+    # If pixel coords (Northing_pix, Easting_pix) are available, the 3D version below
+    # is more accurate and accounts for horizontal offset from nadir:
+    # df['Distance'] = df.apply(lambda x: calc_distance(
+    #     pix_north_east_elev=(x['Northing_pix'], x['Easting_pix'], x['Elevation']),
+    #     uav_north_east_alt=(x['Northing_uav'], x['Easting_uav'], x['Altitude'])),
+    #     axis=1)
+    df['Distance'] = df['Altitude'] - df['Elevation']
+    df.loc[df['Distance'] < 0, 'Distance'] = 100.0
+
+    df['phi'] = df.Temperature.apply(lambda t: phicalc(temp_kelvin=t + 273.15))
+    df['tau'] = df.apply(lambda x: taucalc(
+        distance=x['Distance'], airtemp=x['AirTemp'], RH=x['RH'] / 100), axis=1)
+    df['eVeg'] = df.VegType.apply(lambda v: assign_emissivity(v))
+
+    # FLIR default air temp used when converting signal -> temp in-camera
     default_airtemp = 22
+    df['Temperature_eVeg'] = df.apply(lambda x: calcTargetTemp(
+        phitotal=x['phi'],
+        etarget=x['eVeg'],
+        phiair=airsignalcalc(airtemp_kelvin=default_airtemp + 273.15, airtau=x['tau']),
+        phisky=(x['STRD'] / 3600),
+        tauair=x['tau']) - 273.15,
+        axis=1)
 
-    # # # Convert temp -> signal -> temp
-
-    # Add 'distance' column by subtracting elevation and altitude
-    # Note: Had to add an else here to fix distance calculation... cause it comes up negative for RoanCamp
-    # pixel_df['Distance'] = [a - e if ((a-e)>0) else 100.0 for a, e in zip(pixel_df['Altitude'], pixel_df['Elevation'])]
-    pixel_df['Distance'] = df.apply(lambda x: calc_distance(pix_north_east_elev=(x['Northing_pix'], x['Easting_pix'], x['Elevation']),
-                                                            uav_north_east_alt=(x['Northing'], x['Easting'], x['Altitude'])),
-                                    axis=1)
-    # if this errors out, just assign it as 100 meters
-    pixel_df['Distance'][pixel_df['Distance'] < 0] = 100
-
-    # Create a signal (phi) column
-    df['phi'] = df.Temperature.apply(lambda t: phicalc(temp_kelvin = t + 273.15))
-
-    # Create a tau (air transmissivity) column
-    df['tau'] = df.apply(lambda x: taucalc(distance = x['Distance'],
-                                                       airtemp = x['AirTemp'],
-                                                       RH = x['RH']/100),
-                                     axis=1)
-
-    
-    # Assign emissivities to veg types (using function defined above)
-    pixel_df['eVeg'] = pixel_df.VegType.apply(lambda v: assign_emissivity(v))
-    
-    # # # Compute Emissivity by vegtype
-    pixel_df[f'Temperature_eVeg'] = pixel_df.apply(lambda x: calcTargetTemp(phitotal=x['phi'],
-                                                                            etarget=x['eVeg'],
-                                                                            phiair=airsignalcalc(airtemp_kelvin=default_airtemp + 273.15,
-                                                                                                 airtau=x['tau']),
-                                                                            phisky=(x['STRD']/3600), # new addition of thermal radiation downwarss, converted to Watts (/3600 seconds)
-                                                                            tauair=x['tau']) - 273.15,
-                                                   axis=1)
-    
-
-    return pixel_df
+    return df
 
 
 if __name__ == "__main__":
