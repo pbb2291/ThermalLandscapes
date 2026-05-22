@@ -132,14 +132,16 @@ def correct_temps(imgtraj_df, pixel_df):
 
     df = pixel_df.merge(imgtraj_df, on='imgf')
 
-    # Simple distance: vertical separation between drone altitude and ground elevation.
-    # If pixel coords (Northing_pix, Easting_pix) are available, the 3D version below
-    # is more accurate and accounts for horizontal offset from nadir:
-    # df['Distance'] = df.apply(lambda x: calc_distance(
-    #     pix_north_east_elev=(x['Northing_pix'], x['Easting_pix'], x['Elevation']),
-    #     uav_north_east_alt=(x['Northing_uav'], x['Easting_uav'], x['Altitude'])),
-    #     axis=1)
-    df['Distance'] = df['Altitude'] - df['Elevation']
+    # 3D distance from drone to each pixel using full UTM coordinates + elevation.
+    # Falls back to simple vertical distance (Altitude - Elevation) if pixel coords
+    # (Northing_pix, Easting_pix) are not present — e.g. older pixelpickles.
+    if 'Northing_pix' in df.columns and 'Easting_pix' in df.columns:
+        df['Distance'] = df.apply(lambda x: calc_distance(
+            pix_north_east_elev=(x['Northing_pix'], x['Easting_pix'], x['Elevation']),
+            uav_north_east_alt=(x['Northing_uav'], x['Easting_uav'], x['Altitude'])),
+            axis=1)
+    else:
+        df['Distance'] = df['Altitude'] - df['Elevation']
     df.loc[df['Distance'] < 0, 'Distance'] = 100.0
 
     df['phi'] = df.Temperature.apply(lambda t: phicalc(temp_kelvin=t + 273.15))
